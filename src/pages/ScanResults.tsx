@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,12 @@ import {
   TrendingUp,
   MessageSquare,
   User,
-  ExternalLink
+  ExternalLink,
+  Camera,
+  MessageCircle,
+  Send,
+  BarChart3,
+  Flag
 } from "lucide-react";
 
 const scanResults = [
@@ -108,6 +113,15 @@ export default function ScanResults() {
       case "medium": return "text-warning";
       case "low": return "text-success";
       default: return "text-muted-foreground";
+    }
+  };
+
+  const getPlatformIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case "instagram": return Camera;
+      case "whatsapp": return MessageCircle;
+      case "telegram": return Send;
+      default: return MessageSquare;
     }
   };
 
@@ -244,7 +258,10 @@ export default function ScanResults() {
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <Badge variant="outline">{result.platform}</Badge>
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      {React.createElement(getPlatformIcon(result.platform), { className: "h-3 w-3" })}
+                      {result.platform}
+                    </Badge>
                     <Badge 
                       variant="outline"
                       className={getStatusColor(result.status)}
@@ -259,6 +276,7 @@ export default function ScanResults() {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
                     <Progress value={result.confidence} className="w-20 h-2" />
                     <span className="text-sm font-medium text-foreground">{result.confidence}%</span>
                   </div>
@@ -307,6 +325,7 @@ export default function ScanResults() {
                           Mark Reviewed
                         </Button>
                         <Button size="sm" variant="destructive">
+                          <Flag className="h-3 w-3 mr-1" />
                           Escalate to NCB
                         </Button>
                       </>

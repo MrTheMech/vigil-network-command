@@ -17,7 +17,9 @@ import {
   Shield,
   Activity,
   Calendar,
-  Eye
+  Eye,
+  Smartphone,
+  AtSign
 } from "lucide-react";
 
 const userProfiles = [
@@ -220,16 +222,16 @@ export default function UserMetadata() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <Smartphone className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Phone</p>
+                      <p className="text-sm text-muted-foreground">Mobile Number</p>
                       <p className="font-medium text-foreground">{selectedUser.phone}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <AtSign className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="text-sm text-muted-foreground">Email ID</p>
                       <p className="font-medium text-foreground">{selectedUser.email}</p>
                     </div>
                   </div>
@@ -245,7 +247,7 @@ export default function UserMetadata() {
                   <div className="flex items-center gap-3">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-muted-foreground">Location</p>
+                      <p className="text-sm text-muted-foreground">Geolocation</p>
                       <p className="font-medium text-foreground">{selectedUser.location}</p>
                     </div>
                   </div>

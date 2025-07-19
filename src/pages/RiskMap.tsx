@@ -11,7 +11,8 @@ import {
   Filter,
   Activity,
   Users,
-  MessageSquare
+  MessageSquare,
+  OctagonX
 } from "lucide-react";
 
 const riskZones = [
@@ -181,13 +182,15 @@ export default function RiskMap() {
                       zone.riskLevel === "critical" ? "risk-glow" :
                       zone.riskLevel === "high" ? "warning-glow" : ""
                     }`}>
-                      <div className={`w-4 h-4 rounded-full border-2 ${
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                         zone.riskLevel === "critical" ? "bg-destructive border-destructive" :
                         zone.riskLevel === "high" ? "bg-warning border-warning" :
                         "bg-success border-success"
-                      }`}></div>
+                      }`}>
+                        <OctagonX className="h-3 w-3 text-white" />
+                      </div>
                       {/* Pulse animation */}
-                      <div className={`absolute inset-0 w-4 h-4 rounded-full animate-ping ${
+                      <div className={`absolute inset-0 w-6 h-6 rounded-full animate-ping ${
                         zone.riskLevel === "critical" ? "bg-destructive" :
                         zone.riskLevel === "high" ? "bg-warning" :
                         "bg-success"

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,11 @@ import {
   Download,
   Bell,
   Activity,
-  ExternalLink
+  ExternalLink,
+  RotateCcw,
+  CheckCircle,
+  XCircle,
+  Circle
 } from "lucide-react";
 
 interface Alert {
@@ -159,6 +163,16 @@ export default function AlertLog() {
     }
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "new": return Circle;
+      case "acknowledged": return Clock;
+      case "investigating": return Activity;
+      case "resolved": return CheckCircle;
+      default: return XCircle;
+    }
+  };
+
   const filteredAlerts = alerts.filter(alert => {
     const matchesSearch = alert.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          alert.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -243,10 +257,10 @@ export default function AlertLog() {
         </Card>
         <Card className="cyber-border">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className={`h-3 w-3 rounded-full ${isLive ? "bg-success animate-pulse" : "bg-muted"}`}></div>
-              <span className="text-sm text-muted-foreground">Feed Status</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <RotateCcw className={`h-4 w-4 ${isLive ? "text-success animate-spin" : "text-muted"}`} />
+            <span className="text-sm text-muted-foreground">Feed Status</span>
+          </div>
             <p className="text-sm font-medium text-foreground">{isLive ? "LIVE" : "PAUSED"}</p>
           </CardContent>
         </Card>
@@ -317,7 +331,8 @@ export default function AlertLog() {
                         {alert.severity.toUpperCase()}
                       </Badge>
                       <Badge variant="outline">{alert.platform}</Badge>
-                      <Badge variant="outline" className={getStatusColor(alert.status)}>
+                      <Badge variant="outline" className={`${getStatusColor(alert.status)} flex items-center gap-1`}>
+                        {React.createElement(getStatusIcon(alert.status), { className: "h-3 w-3" })}
                         {alert.status.replace('_', ' ').toUpperCase()}
                       </Badge>
                     </div>
