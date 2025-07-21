@@ -289,31 +289,61 @@
   /* Status-based border styles for users and alerts */
   .border-flagged-user {
     border: 2px solid hsl(32 95% 60%);
-    box-shadow: 0 0 10px hsl(32 95% 60% / 0.3);
+    box-shadow: 0 0 15px hsl(32 95% 60% / 0.4), 0 0 30px hsl(32 95% 60% / 0.2);
+    animation: pulse-orange 3s infinite;
   }
   
   .border-active-scan {
     border: 2px solid hsl(142 71% 45%);
-    box-shadow: 0 0 15px hsl(142 71% 45% / 0.4), 0 0 30px hsl(142 71% 45% / 0.2);
+    box-shadow: 0 0 20px hsl(142 71% 45% / 0.5), 0 0 40px hsl(142 71% 45% / 0.3);
     animation: pulse-green 2s infinite;
   }
   
   .border-high-risk {
     border: 2px solid hsl(0 84% 55%);
-    box-shadow: 0 0 15px hsl(0 84% 55% / 0.4), 0 0 30px hsl(0 84% 55% / 0.2);
+    box-shadow: 0 0 20px hsl(0 84% 55% / 0.5), 0 0 40px hsl(0 84% 55% / 0.3);
+    animation: pulse-red 2.5s infinite;
   }
   
   .border-elevated {
     border: 2px solid hsl(15 100% 45%);
-    box-shadow: 0 0 10px hsl(15 100% 45% / 0.3);
+    box-shadow: 0 0 15px hsl(15 100% 45% / 0.4), 0 0 30px hsl(15 100% 45% / 0.2);
+    animation: pulse-dark-orange 3.5s infinite;
   }
 
   @keyframes pulse-green {
     0%, 100% {
-      box-shadow: 0 0 15px hsl(142 71% 45% / 0.4), 0 0 30px hsl(142 71% 45% / 0.2);
+      box-shadow: 0 0 20px hsl(142 71% 45% / 0.5), 0 0 40px hsl(142 71% 45% / 0.3);
     }
     50% {
-      box-shadow: 0 0 20px hsl(142 71% 45% / 0.6), 0 0 40px hsl(142 71% 45% / 0.3);
+      box-shadow: 0 0 25px hsl(142 71% 45% / 0.7), 0 0 50px hsl(142 71% 45% / 0.4);
+    }
+  }
+
+  @keyframes pulse-red {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(0 84% 55% / 0.5), 0 0 40px hsl(0 84% 55% / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px hsl(0 84% 55% / 0.7), 0 0 60px hsl(0 84% 55% / 0.4);
+    }
+  }
+
+  @keyframes pulse-orange {
+    0%, 100% {
+      box-shadow: 0 0 15px hsl(32 95% 60% / 0.4), 0 0 30px hsl(32 95% 60% / 0.2);
+    }
+    50% {
+      box-shadow: 0 0 20px hsl(32 95% 60% / 0.6), 0 0 40px hsl(32 95% 60% / 0.3);
+    }
+  }
+
+  @keyframes pulse-dark-orange {
+    0%, 100% {
+      box-shadow: 0 0 15px hsl(15 100% 45% / 0.4), 0 0 30px hsl(15 100% 45% / 0.2);
+    }
+    50% {
+      box-shadow: 0 0 20px hsl(15 100% 45% / 0.6), 0 0 35px hsl(15 100% 45% / 0.3);
     }
   }
 
