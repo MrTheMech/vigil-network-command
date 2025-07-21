@@ -317,13 +317,18 @@ export default function AlertLog() {
         <CardContent className="p-0">
           <ScrollArea className="h-[600px]">
             <div className="space-y-2 p-6">
-              {filteredAlerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className={`border rounded-lg p-4 transition-all hover:bg-muted/30 ${
-                    alert.status === "new" ? "border-destructive/50 bg-destructive/5" : "border-border"
-                  }`}
-                >
+              {filteredAlerts.map((alert) => {
+                let borderClass = "border rounded-lg p-4 transition-all hover:bg-muted/30";
+                if (alert.severity === "critical") borderClass += " border-high-risk";
+                else if (alert.severity === "high") borderClass += " border-elevated";
+                else if (alert.status === "new") borderClass += " border-flagged-user bg-destructive/5";
+                else borderClass += " border-border";
+
+                return (
+                  <div
+                    key={alert.id}
+                    className={borderClass}
+                  >
                   {/* Alert Header */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -399,8 +404,9 @@ export default function AlertLog() {
                       )}
                     </div>
                   </div>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           </ScrollArea>
         </CardContent>

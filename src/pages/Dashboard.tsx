@@ -101,22 +101,30 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="cyber-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.change} from last hour
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {stats.map((stat) => {
+          let borderClass = "cyber-border";
+          if (stat.title === "Flagged Users") borderClass = "border-flagged-user";
+          else if (stat.title === "Active Scans") borderClass = "border-active-scan";
+          else if (stat.title === "High-Risk Alerts") borderClass = "border-high-risk";
+          else if (stat.title === "Threat Level") borderClass = "border-elevated";
+
+          return (
+            <Card key={stat.title} className={borderClass}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stat.change} from last hour
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -164,30 +172,37 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentAlerts.map((alert) => (
-              <div key={alert.id} className="border border-border rounded-lg p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="text-xs">
-                    {alert.platform}
-                  </Badge>
-                  <div className="flex items-center gap-2">
-                    <Progress value={alert.confidence} className="w-16 h-2" />
-                    <span className="text-xs text-muted-foreground">{alert.confidence}%</span>
+            {recentAlerts.map((alert) => {
+              let borderClass = "border border-border rounded-lg p-3 space-y-2";
+              if (alert.confidence >= 90) borderClass = "border-high-risk rounded-lg p-3 space-y-2";
+              else if (alert.confidence >= 85) borderClass = "border-elevated rounded-lg p-3 space-y-2";
+              else borderClass = "border-flagged-user rounded-lg p-3 space-y-2";
+
+              return (
+                <div key={alert.id} className={borderClass}>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="text-xs">
+                      {alert.platform}
+                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Progress value={alert.confidence} className="w-16 h-2" />
+                      <span className="text-xs text-muted-foreground">{alert.confidence}%</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-foreground">{alert.message}</p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {alert.location}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {alert.time}
+                    </span>
                   </div>
                 </div>
-                <p className="text-sm text-foreground">{alert.message}</p>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {alert.location}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {alert.time}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       </div>

@@ -251,8 +251,14 @@ export default function ScanResults() {
 
       {/* Results List */}
       <div className="space-y-4">
-        {filteredResults.map((result) => (
-          <Card key={result.id} className="cyber-border">
+        {filteredResults.map((result) => {
+          let borderClass = "cyber-border";
+          if (result.riskLevel === "critical") borderClass = "border-high-risk";
+          else if (result.riskLevel === "high") borderClass = "border-elevated";
+          else if (result.status === "pending") borderClass = "border-flagged-user";
+
+          return (
+            <Card key={result.id} className={borderClass}>
             <CardContent className="p-6">
               <div className="space-y-4">
                 {/* Header */}
@@ -335,7 +341,8 @@ export default function ScanResults() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
