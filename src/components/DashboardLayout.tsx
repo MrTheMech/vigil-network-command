@@ -17,10 +17,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       />
       
       <main className={cn(
-        "transition-all duration-300",
+        "transition-all duration-300 relative z-10",
         sidebarCollapsed ? "ml-16" : "ml-64"
       )}>
-        <div className="p-6">
+        <div className="p-6 relative z-10">
           {children}
         </div>
       </main>
