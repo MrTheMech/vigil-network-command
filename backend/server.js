@@ -373,6 +373,98 @@ app.get('/api/risk-zones', async (req, res) => {
   }
 });
 
+// Add Message Route - Matches MySQL messages table exactly
+app.post('/api/messages/add', async (req, res) => {
+  try {
+    if (!pool) {
+      return res.status(500).json({ success: false, error: 'Database not connected' });
+    }
+
+    const msg = req.body;
+
+    // Helper to parse Python datetime strings like '2025-08-12 08:27:51'
+    const parseDate = (val) => {
+      if (!val) return new Date();
+      try {
+        if (typeof val === 'string') return new Date(val.replace('datetime.datetime', '').replace(/[()]/g, '').trim());
+        if (val.$date) return new Date(val.$date);
+        if (val instanceof Date) return val;
+        return new Date(val);
+      } catch {
+        return new Date();
+      }
+    };
+
+    // --- 1. Find or insert user ---
+    let userId = null;
+    if (msg.sender_info?.username) {
+      const existingUser = await queryDb(
+        `SELECT id FROM users WHERE username = ? AND platform = ? LIMIT 1`,
+        [msg.sender_info.username, msg.platform || 'Telegram']
+      );
+
+      if (existingUser.length > 0) {
+        userId = existingUser[0].id;
+      } else {
+        const result = await queryDb(
+          `INSERT INTO users (username, platform, real_name, phone, email, location, join_date, last_active)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            msg.sender_info.username,
+            msg.platform || 'Telegram',
+            msg.sender_info.first_name || null,
+            msg.sender_info.phone || null,
+            null, // email not provided
+            null, // location not provided
+            parseDate(msg.metadata?.date),
+            parseDate(msg.metadata?.date)
+          ]
+        );
+        userId = result.insertId;
+      }
+    }
+
+    // --- 2. Insert into messages table ---
+    const insertResult = await queryDb(
+      `INSERT INTO messages (
+        platform_message_id,
+        platform,
+        user_id,
+        content,
+        detected_terms,
+        substance_mappings,
+        confidence_score,
+        risk_level,
+        location,
+        timestamp
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        msg.message_id?.toString() || null,
+        msg.platform || 'Telegram',
+        userId,
+        msg.content?.text || '',
+        msg.detected_terms || null,
+        msg.substance_mappings || null,
+        msg.confidence_score != null ? Number(msg.confidence_score) : null,
+        msg.risk_level || null,
+        msg.location || null,
+        parseDate(msg.metadata?.date)
+      ]
+    );
+
+    res.json({
+      success: true,
+      message: 'Message stored successfully',
+      inserted_message_id: insertResult.insertId
+    });
+  } catch (error) {
+    console.error('Error saving message:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+
+
 app.get('/api/codewords', async (req, res) => {
   try {
     if (!pool) {
