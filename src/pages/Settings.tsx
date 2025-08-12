@@ -120,7 +120,7 @@ export default function Settings() {
                     <div className="space-y-2">
                       <Input placeholder="Add location..." />
                       <div className="flex flex-wrap gap-2">
-                        {["Mumbai", "Delhi", "Bengaluru", "Chennai"].map((location) => (
+                        {["Chennai","Mumbai", "Delhi", "Bengaluru" ].map((location) => (
                           <Badge key={location} variant="outline">
                             {location}
                           </Badge>

@@ -48,11 +48,11 @@ const stats = [
 ];
 
 const highRiskLocations = [
-  { city: "Mumbai", alerts: 89, risk: "Critical" },
-  { city: "Delhi", alerts: 76, risk: "High" },
-  { city: "Bengaluru", alerts: 54, risk: "High" },
-  { city: "Kolkata", alerts: 42, risk: "Medium" },
-  { city: "Chennai", alerts: 38, risk: "Medium" }
+  { city: "Chennai", alerts: 89, risk: "Critical" },
+  { city: "Delhi", alerts: 0, risk: "High" },
+  { city: "Bengaluru", alerts: 0, risk: "High" },
+  { city: "Kolkata", alerts: 0, risk: "Medium" },
+  { city: "Mumbai", alerts: 0, risk: "Medium" }
 ];
 
 const recentAlerts = [
@@ -61,7 +61,7 @@ const recentAlerts = [
     platform: "Telegram",
     message: "Detected term 'candy' referring to MDMA",
     confidence: 91,
-    location: "Mumbai",
+    location: "Chennai",
     time: "2 min ago"
   },
   {
@@ -69,7 +69,7 @@ const recentAlerts = [
     platform: "Instagram",
     message: "Suspicious payment patterns detected",
     confidence: 87,
-    location: "Delhi",
+    location: "Chennai",
     time: "5 min ago"
   },
   {
@@ -77,7 +77,7 @@ const recentAlerts = [
     platform: "WhatsApp",
     message: "Code word 'snow' detected in group chat",
     confidence: 94,
-    location: "Bengaluru",
+    location: "Chennai",
     time: "8 min ago"
   }
 ];

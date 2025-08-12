@@ -18,7 +18,7 @@ import {
 const riskZones = [
   {
     id: 1,
-    name: "Dharavi, Mumbai",
+    name: "T. Nagar, Chennai",
     coords: [19.0430, 72.8570],
     riskLevel: "critical",
     alerts: 156,
@@ -48,7 +48,7 @@ const riskZones = [
   },
   {
     id: 4,
-    name: "T. Nagar, Chennai",
+    name: "Dharavi, Mumbai",
     coords: [13.0418, 80.2341],
     riskLevel: "medium",
     alerts: 34,

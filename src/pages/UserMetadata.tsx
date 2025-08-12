@@ -31,7 +31,7 @@ const userProfiles = [
     phone: "+91-98765-43210",
     email: "encrypted@telegram",
     ipAddress: "103.21.58.XXX",
-    location: "Mumbai, Maharashtra",
+    location: "Chennai, Tamil Nadu",
     joinDate: "2023-08-15",
     lastActive: "2 hours ago",
     riskScore: 94,

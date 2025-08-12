@@ -122,7 +122,7 @@ export default function AlertLog() {
           "Bulk messaging pattern indicates distribution activity"
         ][Math.floor(Math.random() * 4)],
         user: ["@new_supplier", "@crypto_user", "+91-9XXXX-XXX23", "@party_dealer"][Math.floor(Math.random() * 4)],
-        location: ["Mumbai", "Delhi", "Bengaluru", "Chennai", "Pune"][Math.floor(Math.random() * 5)],
+        location: [ "Chennai","Mumbai", "Delhi", "Bengaluru", "Pune"][Math.floor(Math.random() * 5)],
         confidence: Math.floor(Math.random() * 30) + 70,
         status: "new"
       };

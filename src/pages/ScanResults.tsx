@@ -32,7 +32,7 @@ const scanResults = [
     detectedTerm: "candy",
     substance: "MDMA",
     confidence: 94,
-    location: "Mumbai, Maharashtra",
+    location: "Chennai, Tamil Nadu",
     timestamp: "2024-01-15 14:23:45",
     status: "pending",
     riskLevel: "high"
@@ -45,7 +45,7 @@ const scanResults = [
     detectedTerm: "snow",
     substance: "Cocaine",
     confidence: 91,
-    location: "Delhi, NCR",
+    location: "Chennai, Tamil Nadu",
     timestamp: "2024-01-15 14:18:12",
     status: "reviewed",
     riskLevel: "critical"
@@ -58,7 +58,7 @@ const scanResults = [
     detectedTerm: "charlie",
     substance: "Cocaine",
     confidence: 87,
-    location: "Bengaluru, Karnataka",
+    location: "Chennai, Tamil Nadu",
     timestamp: "2024-01-15 14:15:33",
     status: "escalated",
     riskLevel: "critical"
@@ -71,7 +71,7 @@ const scanResults = [
     detectedTerm: "grass",
     substance: "Cannabis",
     confidence: 89,
-    location: "Chandigarh, Punjab",
+    location: "Chennai, Tamil Nadu",
     timestamp: "2024-01-15 14:12:07",
     status: "pending",
     riskLevel: "medium"
@@ -84,7 +84,7 @@ const scanResults = [
     detectedTerm: "pills",
     substance: "MDMA/Ecstasy",
     confidence: 96,
-    location: "Mumbai, Maharashtra",
+    location: "Chennai, Tamil Nadu",
     timestamp: "2024-01-15 14:08:41",
     status: "pending",
     riskLevel: "high"
