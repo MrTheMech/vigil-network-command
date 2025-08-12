@@ -1,0 +1,55 @@
+CREATE TABLE IF NOT EXISTS profiles (
+  id BIGINT PRIMARY KEY,
+  username VARCHAR(255) NOT NULL,
+  first_name VARCHAR(100),
+  phone VARCHAR(20),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+
+CREATE TABLE IF NOT EXISTS messages (
+  message_id BIGINT PRIMARY KEY,
+  channel_id BIGINT NOT NULL,
+  channel_username VARCHAR(255),
+  sender_id BIGINT,
+  sender_username VARCHAR(255),
+  sender_first_name VARCHAR(100),
+  sender_phone VARCHAR(20),
+  text TEXT,
+  media_type VARCHAR(50),
+  has_document BOOLEAN,
+  has_photo BOOLEAN,
+  has_video BOOLEAN
+);
+
+
+
+
+CREATE TABLE IF NOT EXISTS message_metadata (
+  message_id BIGINT PRIMARY KEY,
+  message_date DATETIME,
+  edit_date DATETIME,
+  reply_to BIGINT,
+  forward_info JSON,
+  extracted_at DATETIME,
+  FOREIGN KEY (message_id) REFERENCES messages(message_id) ON DELETE CASCADE
+);
+
+
+
+
+CREATE TABLE threat_messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  message_id BIGINT NOT NULL,
+  status VARCHAR(20) DEFAULT 'new',
+  confidence INT DEFAULT 84,
+  severity VARCHAR(50),
+
+  -- Foreign key constraint
+  CONSTRAINT fk_message_id
+    FOREIGN KEY (message_id)
+    REFERENCES messages(message_id)
+    ON DELETE CASCADE
+);

@@ -195,29 +195,12 @@ export default function AlertLog() {
           <h1 className="text-3xl font-bold text-foreground">Alert Log</h1>
           <p className="text-muted-foreground">Real-time monitoring of suspicious activities</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={isLive ? "destructive" : "default"}
-            onClick={() => setIsLive(!isLive)}
-            size="sm"
-          >
-            {isLive ? (
-              <>
-                <Pause className="h-4 w-4 mr-2" />
-                Pause Feed
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4 mr-2" />
-                Resume Feed
-              </>
-            )}
-          </Button>
+        {/* <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Status Bar */}

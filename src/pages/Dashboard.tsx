@@ -11,41 +11,9 @@ import {
   Shield,
   Zap
 } from "lucide-react";
+import axios from "axios"; // or fetch()
+import { useEffect, useState } from "react";
 
-const stats = [
-  {
-    title: "Flagged Users",
-    value: "2,847",
-    change: "+12%",
-    icon: Users,
-    trend: "up",
-    color: "text-warning"
-  },
-  {
-    title: "Active Scans",
-    value: "6",
-    change: "Live",
-    icon: Activity,
-    trend: "stable",
-    color: "text-success"
-  },
-  {
-    title: "High-Risk Alerts",
-    value: "34",
-    change: "+8 today",
-    icon: AlertTriangle,
-    trend: "up",
-    color: "text-destructive"
-  },
-  {
-    title: "Threat Level",
-    value: "ELEVATED",
-    change: "Monitoring",
-    icon: Shield,
-    trend: "stable",
-    color: "text-warning"
-  }
-];
 
 const highRiskLocations = [
   { city: "Mumbai", alerts: 89, risk: "Critical" },
@@ -55,34 +23,129 @@ const highRiskLocations = [
   { city: "Chennai", alerts: 38, risk: "Medium" }
 ];
 
-const recentAlerts = [
-  {
-    id: 1,
-    platform: "Telegram",
-    message: "Detected term 'candy' referring to MDMA",
-    confidence: 91,
-    location: "Mumbai",
-    time: "2 min ago"
-  },
-  {
-    id: 2,
-    platform: "Instagram",
-    message: "Suspicious payment patterns detected",
-    confidence: 87,
-    location: "Delhi",
-    time: "5 min ago"
-  },
-  {
-    id: 3,
-    platform: "WhatsApp",
-    message: "Code word 'snow' detected in group chat",
-    confidence: 94,
-    location: "Bengaluru",
-    time: "8 min ago"
-  }
-];
+
 
 export default function Dashboard() {
+  const [stats, setStats] = useState([
+    {
+      title: "Flagged Users",
+      value: "Loading...",
+      change: "+12%",
+      icon: Users,
+      trend: "up",
+      color: "text-warning"
+    },
+    {
+      title: "Active Scans",
+      value: "Loading...",
+      change: "Live",
+      icon: Activity,
+      trend: "stable",
+      color: "text-success"
+    },
+    {
+      title: "High-Risk Alerts",
+      value: "Loading...",
+      change: "+8 today",
+      icon: AlertTriangle,
+      trend: "up",
+      color: "text-destructive"
+    },
+    {
+      title: "Threat Level",
+      value: "Loading...",
+      change: "Monitoring",
+      icon: Shield,
+      trend: "stable",
+      color: "text-warning"
+    }
+  ]);
+
+  const [recentAlerts, setAlerts] = useState([
+    {
+      id: 1,
+      platform: "Loading...",
+      message: "Loading...",
+      confidence: 91,
+      location: "Mumbai",
+      time: "Loading..."
+    },
+    {
+      id: 2,
+      platform: "Loading...",
+      message: "Loading...",
+      confidence: 87,
+      location: "Delhi",
+      time: "Loading..."
+    },
+    {
+      id: 3,
+      platform: "Loading...",
+      message: "Loading...",
+      confidence: 94,
+      location: "Chennai",
+      time: "Loading..."
+    },
+    {
+      id: 4,
+      platform: "Loading...",
+      message: "Loading...",
+      confidence: 14,
+      location: "Chennai",
+      time: "Loading..."
+    }
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [countRes, recentRes, riskRes, latestRes] = await Promise.all([
+          axios.get("http://127.0.0.1:9300/api/count-threat-messages"),
+          axios.get("http://127.0.0.1:9300/api/recent-threat-messages"),
+          axios.get("http://127.0.0.1:9300/api/high-risk-allert"),
+          axios.get("http://127.0.0.1:9300/api/get-rescent-messages")
+        ]);
+
+        const count = countRes.data.count;
+        const recent = recentRes.data.count;
+        const seviearity = recentRes.data.seviarity;
+        const riskCount = riskRes.data.count
+        const latestMessages = latestRes.data.messages
+
+
+        setStats((prev) => {
+          const updated = [...prev];
+          updated[0].value = count.toLocaleString();  // "Flagged Users"
+          updated[1].value = recent.toString();       // "Active Scans"
+          updated[2].value = riskCount; 
+          updated[3].value = seviearity;
+          return updated;
+        });
+
+        setAlerts((prev) => {
+          const updated = [...prev];
+          const mergedData = updated.map((item, index) => {
+            const dbItem = latestMessages[index];
+            if (!dbItem) return item;
+          
+            return {
+              ...item,
+              platform: dbItem.channel_username,
+              message: dbItem.text,
+              time: new Date(dbItem.created_at).toLocaleString() // optional formatting
+            };
+          });
+          console.log(mergedData)
+          return mergedData;
+        })
+        
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -208,7 +271,7 @@ export default function Dashboard() {
       </div>
 
       {/* System Performance */}
-      <Card className="cyber-border">
+      {/*<Card className="cyber-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-foreground">
             <TrendingUp className="h-5 w-5 text-primary" />
@@ -240,7 +303,7 @@ export default function Dashboard() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card>*/}
     </div>
   );
 }
