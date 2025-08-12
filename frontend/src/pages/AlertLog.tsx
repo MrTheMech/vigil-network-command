@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { apiGet } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ interface Alert {
   status: "new" | "acknowledged" | "investigating" | "resolved";
 }
 
-const initialAlerts: Alert[] = [
+const defaultAlerts: Alert[] = [
   {
     id: "ALT-001",
     timestamp: "2024-01-15 15:42:15",
@@ -99,13 +100,19 @@ const initialAlerts: Alert[] = [
 ];
 
 export default function AlertLog() {
-  const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+  const [alerts, setAlerts] = useState<Alert[]>(defaultAlerts);
   const [isLive, setIsLive] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
 
   // Simulate real-time alerts
   useEffect(() => {
+    // fetch from backend once
+    (async () => {
+      const data = await apiGet<Alert[]>("/api/alerts", defaultAlerts);
+      setAlerts(data);
+    })();
+
     if (!isLive) return;
 
     const interval = setInterval(() => {

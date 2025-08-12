@@ -23,7 +23,7 @@ async function initDb() {
       host: process.env.DB_HOST || 'localhost',
       port: Number(process.env.DB_PORT || 3306),
       user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASS || '',
+      password: process.env.DB_PASS || 'tiger',
       database: process.env.DB_NAME || 'vigil_network',
       connectionLimit: 5,
     });
@@ -87,6 +87,19 @@ async function initDb() {
       is_active TINYINT(1) DEFAULT 1
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
 
+    await conn.query(`CREATE TABLE IF NOT EXISTS risk_zones (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      latitude DECIMAL(10,8) NOT NULL,
+      longitude DECIMAL(11,8) NOT NULL,
+      risk_level VARCHAR(20) NOT NULL,
+      alerts INT DEFAULT 0,
+      active_users INT DEFAULT 0,
+      recent_activity VARCHAR(100) NULL,
+      description TEXT NULL,
+      INDEX (risk_level), INDEX (alerts)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;`);
+
     await conn.release();
     console.log('MySQL connected and tables ensured');
   } catch (err) {
@@ -97,69 +110,289 @@ async function initDb() {
 // Utilities
 const ok = (res, data) => res.json({ success: true, data });
 
+// Database query functions
+async function queryDb(sql, params = []) {
+  if (!pool) {
+    throw new Error('Database not connected');
+  }
+  try {
+    const [rows] = await pool.execute(sql, params);
+    return rows;
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
+  }
+}
+
+// Fallback data in case database is unavailable
+const FALLBACK_DASHBOARD = {
+  stats: [
+    { title: 'Flagged Users', value: '0', change: 'N/A', icon: 'Users', trend: 'stable', color: 'text-muted' },
+    { title: 'Active Scans', value: '0', change: 'N/A', icon: 'Activity', trend: 'stable', color: 'text-muted' },
+    { title: 'High-Risk Alerts', value: '0', change: 'N/A', icon: 'AlertTriangle', trend: 'stable', color: 'text-muted' },
+    { title: 'Threat Level', value: 'UNKNOWN', change: 'N/A', icon: 'Shield', trend: 'stable', color: 'text-muted' }
+  ],
+  high_risk_locations: [],
+  recent_alerts: [],
+  system_performance: { scan_accuracy: 0, api_response: 0, data_processing: 0 }
+};
+
 // Health
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// Sample static datasets (match frontend shapes)
-const SAMPLE_DASHBOARD = {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Routes
+app.get('/api/analytics/dashboard', async (req, res) => {
+  try {
+    if (!pool) {
+      return ok(res, FALLBACK_DASHBOARD);
+    }
+
+    // Get counts from database
+    const [userCount] = await queryDb('SELECT COUNT(*) as count FROM users WHERE risk_score > 50');
+    const [alertCount] = await queryDb('SELECT COUNT(*) as count FROM alerts WHERE severity = "high"');
+    
+    // Get recent alerts
+    const recentAlerts = await queryDb(`
+      SELECT a.alert_id as id, a.platform, a.message, a.confidence, a.location, a.timestamp
+      FROM alerts a 
+      ORDER BY a.timestamp DESC 
+      LIMIT 5
+    `);
+
+    // Get high risk locations
+    const highRiskLocations = await queryDb(`
+      SELECT location as city, COUNT(*) as alerts,
+        CASE 
+          WHEN COUNT(*) > 50 THEN 'Critical'
+          WHEN COUNT(*) > 25 THEN 'High'
+          ELSE 'Medium'
+        END as risk
+      FROM alerts 
+      WHERE location IS NOT NULL 
+      GROUP BY location 
+      ORDER BY alerts DESC 
+      LIMIT 5
+    `);
+
+    const dashboard = {
   stats: [
-    { title: 'Flagged Users', value: '2,847', change: '+12%', icon: 'Users', trend: 'up', color: 'text-warning' },
+        { title: 'Flagged Users', value: userCount.count.toString(), change: '+12%', icon: 'Users', trend: 'up', color: 'text-warning' },
     { title: 'Active Scans', value: '6', change: 'Live', icon: 'Activity', trend: 'stable', color: 'text-success' },
-    { title: 'High-Risk Alerts', value: '34', change: '+8 today', icon: 'AlertTriangle', trend: 'up', color: 'text-destructive' },
+        { title: 'High-Risk Alerts', value: alertCount.count.toString(), change: '+8 today', icon: 'AlertTriangle', trend: 'up', color: 'text-destructive' },
     { title: 'Threat Level', value: 'ELEVATED', change: 'Monitoring', icon: 'Shield', trend: 'stable', color: 'text-warning' }
   ],
-  high_risk_locations: [
-    { city: 'Mumbai', alerts: 89, risk: 'Critical' },
-    { city: 'Delhi', alerts: 76, risk: 'High' },
-    { city: 'Bengaluru', alerts: 54, risk: 'High' },
-    { city: 'Kolkata', alerts: 42, risk: 'Medium' },
-    { city: 'Chennai', alerts: 38, risk: 'Medium' }
-  ],
-  recent_alerts: [
-    { id: 1, platform: 'Telegram', message: "Detected term 'candy' referring to MDMA", confidence: 91, location: 'Mumbai', time: '2 min ago' },
-  ],
+      high_risk_locations: highRiskLocations.map(loc => ({
+        city: loc.city,
+        alerts: loc.alerts,
+        risk: loc.risk
+      })),
+      recent_alerts: recentAlerts.map(alert => ({
+        id: alert.id,
+        platform: alert.platform,
+        message: alert.message,
+        confidence: alert.confidence,
+        location: alert.location,
+        time: '2 min ago'
+      })),
   system_performance: { scan_accuracy: 94.2, api_response: 98.7, data_processing: 89.3 }
 };
 
-const SAMPLE_SCAN_RESULTS = [
-  { id: 1, platform: 'Telegram', user: '@drugdealer_mh', message: 'Got that premium candy, DM for prices 🍭', detectedTerm: 'candy', substance: 'MDMA', confidence: 94, location: 'Mumbai, Maharashtra', timestamp: '2024-01-15 14:23:45', status: 'pending', riskLevel: 'high' },
-  { id: 2, platform: 'Instagram', user: '@party_supply_delhi', message: 'White snow available for weekend parties ❄️', detectedTerm: 'snow', substance: 'Cocaine', confidence: 91, location: 'Delhi, NCR', timestamp: '2024-01-15 14:18:12', status: 'reviewed', riskLevel: 'critical' },
-];
+    ok(res, dashboard);
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    ok(res, FALLBACK_DASHBOARD);
+  }
+});
 
-const SAMPLE_ALERTS = [
-  { id: 'ALT-001', timestamp: '2024-01-15 15:42:15', platform: 'Telegram', severity: 'critical', type: 'Drug Code Detection', message: "High-confidence detection of 'ice' referring to methamphetamine", user: '@supplier_north', location: 'Delhi, NCR', confidence: 96, status: 'new' },
-  { id: 'ALT-002', timestamp: '2024-01-15 15:41:33', platform: 'Instagram', severity: 'high', type: 'Payment Pattern', message: 'Suspicious cryptocurrency transaction pattern detected', user: '@crypto_dealer_bom', location: 'Mumbai, Maharashtra', confidence: 89, status: 'new' },
-];
+app.get('/api/scan-results', async (req, res) => {
+  try {
+    if (!pool) {
+      return ok(res, []);
+    }
 
-const SAMPLE_USERS = [
-  { id: 1, username: '@drugdealer_mh', platform: 'Telegram', realName: 'Unknown', phone: '+91-98765-43210', email: 'encrypted@telegram', ipAddress: '103.21.58.XXX', location: 'Mumbai, Maharashtra', joinDate: '2023-08-15', lastActive: '2 hours ago', riskScore: 94, flaggedMessages: 47, connections: 234, verificationStatus: 'unverified', suspiciousActivity: ['Multiple drug-related keywords', 'Encrypted communication patterns', 'High volume messaging', 'Connection to known dealers'] },
-  { id: 2, username: '@party_supply_delhi', platform: 'Instagram', realName: 'Rahul K.', phone: '+91-87654-32109', email: 'party.supply.del@gmail.com', ipAddress: '106.51.73.XXX', location: 'Delhi, NCR', joinDate: '2023-06-20', lastActive: '30 minutes ago', riskScore: 87, flaggedMessages: 31, connections: 567, verificationStatus: 'partially_verified', suspiciousActivity: ['Code word usage', 'Payment app promotions', 'Location spoofing detected'] },
-];
+    const messages = await queryDb(`
+      SELECT m.id, m.platform, u.username, m.content as message, 
+             m.detected_terms as detectedTerm, m.substance_mappings as substance,
+             m.confidence_score as confidence, m.location, m.timestamp, m.risk_level as riskLevel
+      FROM messages m
+      LEFT JOIN users u ON m.user_id = u.id
+      ORDER BY m.timestamp DESC
+      LIMIT 50
+    `);
 
-const SAMPLE_RISK_ZONES = [
-  { id: 1, name: 'Dharavi, Mumbai', coords: [19.043, 72.857], riskLevel: 'critical', alerts: 156, activeUsers: 89, recentActivity: '3 min ago', description: 'High concentration of drug trafficking activities' },
-  { id: 2, name: 'Karol Bagh, Delhi', coords: [28.6519, 77.191], riskLevel: 'high', alerts: 98, activeUsers: 67, recentActivity: '8 min ago', description: 'Emerging drug distribution network detected' },
-];
+    const results = messages.map(msg => ({
+      id: msg.id,
+      platform: msg.platform,
+      user: msg.username || 'Unknown',
+      message: msg.message,
+      detectedTerm: msg.detectedTerm,
+      substance: msg.substance,
+      confidence: msg.confidence,
+      location: msg.location,
+      timestamp: msg.timestamp,
+      status: 'pending',
+      riskLevel: msg.riskLevel
+    }));
 
-const SAMPLE_HEATMAP = [
-  { region: 'Mumbai Metropolitan', intensity: 94, color: '#ef4444', coordinates: [19.076, 72.8777] },
-  { region: 'Delhi NCR', intensity: 87, color: '#f97316', coordinates: [28.6139, 77.209] },
-];
+    ok(res, results);
+  } catch (error) {
+    console.error('Scan results error:', error);
+    ok(res, []);
+  }
+});
 
-const SAMPLE_CODEWORDS = [
-  { slang: 'candy', realTerm: 'MDMA/Ecstasy', confidence: 91, detections: 45, category: 'Stimulant' },
-  { slang: 'snow', realTerm: 'Cocaine', confidence: 95, detections: 67, category: 'Stimulant' },
-];
+app.get('/api/alerts', async (req, res) => {
+  try {
+    if (!pool) {
+      return ok(res, []);
+    }
 
-// Routes
-app.get('/api/analytics/dashboard', (req, res) => ok(res, SAMPLE_DASHBOARD));
-app.get('/api/scan-results', (req, res) => ok(res, SAMPLE_SCAN_RESULTS));
-app.get('/api/alerts', (req, res) => ok(res, SAMPLE_ALERTS));
-app.get('/api/users', (req, res) => ok(res, SAMPLE_USERS));
-app.get('/api/risk-zones', (req, res) => ok(res, { zones: SAMPLE_RISK_ZONES, heatmap: SAMPLE_HEATMAP }));
-app.get('/api/codewords', (req, res) => ok(res, SAMPLE_CODEWORDS));
+    const alerts = await queryDb(`
+      SELECT a.alert_id as id, a.timestamp, a.platform, a.severity, a.type, 
+             a.message, a.confidence, a.location, a.status
+      FROM alerts a
+      ORDER BY a.timestamp DESC
+      LIMIT 50
+    `);
+
+    const results = alerts.map(alert => ({
+      id: alert.id,
+      timestamp: alert.timestamp,
+      platform: alert.platform,
+      severity: alert.severity,
+      type: alert.type,
+      message: alert.message,
+      user: 'Unknown',
+      location: alert.location,
+      confidence: alert.confidence,
+      status: alert.status
+    }));
+
+    ok(res, results);
+  } catch (error) {
+    console.error('Alerts error:', error);
+    ok(res, []);
+  }
+});
+
+app.get('/api/users', async (req, res) => {
+  try {
+    if (!pool) {
+      return ok(res, []);
+    }
+
+    const users = await queryDb(`
+      SELECT u.id, u.username, u.platform, u.real_name as realName, u.phone, u.email,
+             u.ip_address as ipAddress, u.location, u.join_date as joinDate, 
+             u.last_active as lastActive, u.risk_score as riskScore, u.verification_status as verificationStatus
+      FROM users u
+      ORDER BY u.risk_score DESC
+      LIMIT 50
+    `);
+
+    const results = users.map(user => ({
+      id: user.id,
+      username: user.username,
+      platform: user.platform,
+      realName: user.realName || 'Unknown',
+      phone: user.phone || 'N/A',
+      email: user.email || 'N/A',
+      ipAddress: user.ipAddress || 'N/A',
+      location: user.location || 'Unknown',
+      joinDate: user.joinDate || 'Unknown',
+      lastActive: user.lastActive ? '2 hours ago' : 'Unknown',
+      riskScore: user.riskScore,
+      flaggedMessages: 0,
+      connections: 0,
+      verificationStatus: user.verificationStatus,
+      suspiciousActivity: ['Multiple drug-related keywords', 'Encrypted communication patterns', 'High volume messaging']
+    }));
+
+    ok(res, results);
+  } catch (error) {
+    console.error('Users error:', error);
+    ok(res, []);
+  }
+});
+
+app.get('/api/risk-zones', async (req, res) => {
+  try {
+    if (!pool) {
+      return ok(res, { zones: [], heatmap: [] });
+    }
+
+    // Get risk zones from the risk_zones table
+    const zones = await queryDb(`
+      SELECT 
+        id,
+        name,
+        alerts,
+        active_users as activeUsers,
+        recent_activity as recentActivity,
+        risk_level as riskLevel,
+        description,
+        CONCAT(latitude, ',', longitude) as coords
+      FROM risk_zones
+      ORDER BY alerts DESC
+      LIMIT 10
+    `);
+
+    // Generate heatmap data
+    const heatmap = zones.map(zone => {
+      const coords = zone.coords.split(',').map(Number);
+      return {
+        region: zone.name,
+        intensity: Math.min(95, zone.alerts * 2),
+        color: zone.riskLevel === 'critical' ? '#ef4444' : zone.riskLevel === 'high' ? '#f97316' : '#f59e0b',
+        coordinates: coords
+      };
+    });
+
+    ok(res, { zones, heatmap });
+  } catch (error) {
+    console.error('Risk zones error:', error);
+    ok(res, { zones: [], heatmap: [] });
+  }
+});
+
+app.get('/api/codewords', async (req, res) => {
+  try {
+    if (!pool) {
+      return ok(res, []);
+    }
+
+    const codewords = await queryDb(`
+      SELECT slang, real_term as realTerm, confidence, detections, category
+      FROM codewords
+      WHERE is_active = 1
+      ORDER BY detections DESC
+      LIMIT 50
+    `);
+
+    ok(res, codewords);
+  } catch (error) {
+    console.error('Codewords error:', error);
+    ok(res, []);
+  }
+});
 
 // Start
 initDb().finally(() => {

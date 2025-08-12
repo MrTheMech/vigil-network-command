@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiGet } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   OctagonX
 } from "lucide-react";
 
-const riskZones = [
+const defaultRiskZones = [
   {
     id: 1,
     name: "T. Nagar, Chennai",
@@ -38,37 +39,17 @@ const riskZones = [
   },
   {
     id: 3,
-    name: "Commercial Street, Bengaluru",
+    name: "Connect database - Database offline",
     coords: [12.9716, 77.5946],
     riskLevel: "high",
     alerts: 78,
     activeUsers: 45,
     recentActivity: "12 min ago",
     description: "Party drug supply chain identified"
-  },
-  {
-    id: 4,
-    name: "Dharavi, Mumbai",
-    coords: [13.0418, 80.2341],
-    riskLevel: "medium",
-    alerts: 34,
-    activeUsers: 23,
-    recentActivity: "25 min ago",
-    description: "Suspicious messaging patterns observed"
-  },
-  {
-    id: 5,
-    name: "Sector 17, Chandigarh",
-    coords: [30.7400, 76.7800],
-    riskLevel: "medium",
-    alerts: 28,
-    activeUsers: 19,
-    recentActivity: "1 hour ago",
-    description: "Cannabis distribution monitoring"
   }
 ];
 
-const heatmapData = [
+const defaultHeatmapData = [
   { region: "Mumbai Metropolitan", intensity: 94, color: "#ef4444" },
   { region: "Delhi NCR", intensity: 87, color: "#f97316" },
   { region: "Bengaluru Urban", intensity: 76, color: "#f59e0b" },
@@ -79,7 +60,20 @@ const heatmapData = [
 
 export default function RiskMap() {
   const [viewMode, setViewMode] = useState<"heatmap" | "pinpoint">("pinpoint");
-  const [selectedZone, setSelectedZone] = useState(riskZones[0]);
+  const [riskZones, setRiskZones] = useState(defaultRiskZones);
+  const [heatmapData, setHeatmapData] = useState(defaultHeatmapData);
+  const [selectedZone, setSelectedZone] = useState(defaultRiskZones[0]);
+
+  useEffect(() => {
+    (async () => {
+      const data = await apiGet("/api/risk-zones", { zones: defaultRiskZones, heatmap: defaultHeatmapData });
+      if ((data as any).zones) {
+        setRiskZones((data as any).zones);
+        setSelectedZone((data as any).zones[0] || defaultRiskZones[0]);
+      }
+      if ((data as any).heatmap) setHeatmapData((data as any).heatmap);
+    })();
+  }, []);
 
   const getRiskColor = (level: string) => {
     switch (level) {

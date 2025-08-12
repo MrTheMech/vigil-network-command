@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { apiGet } from "@/lib/api";
 import { Brain, AlertTriangle, TrendingUp, Plus, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,7 @@ interface CodewordMapping {
   category: string;
 }
 
-const mockCodewords: CodewordMapping[] = [
+const defaultCodewords: CodewordMapping[] = [
   { slang: "candy", realTerm: "MDMA/Ecstasy", confidence: 91, detections: 45, category: "Stimulant" },
   { slang: "snow", realTerm: "Cocaine", confidence: 95, detections: 67, category: "Stimulant" },
   { slang: "grass", realTerm: "Cannabis", confidence: 88, detections: 23, category: "Cannabis" },
@@ -33,8 +34,16 @@ export function AILanguagePanel() {
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
   const [newSlang, setNewSlang] = useState("");
   const [newTerm, setNewTerm] = useState("");
+  const [codewords, setCodewords] = useState<CodewordMapping[]>(defaultCodewords);
 
-  const filteredCodewords = mockCodewords.filter(
+  useEffect(() => {
+    (async () => {
+      const data = await apiGet<CodewordMapping[]>("/api/codewords", defaultCodewords);
+      setCodewords(data);
+    })();
+  }, []);
+
+  const filteredCodewords = codewords.filter(
     (item) =>
       item.slang.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.realTerm.toLowerCase().includes(searchTerm.toLowerCase())
@@ -108,7 +117,7 @@ export function AILanguagePanel() {
           </div>
           <Badge variant="outline" className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            {mockCodewords.length} terms detected
+            {codewords.length} terms detected
           </Badge>
         </div>
       </CardHeader>

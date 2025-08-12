@@ -64,6 +64,25 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/2bc4c3c7-369d-4a0f-a0e4-89deee5bbca2) and click on Share -> Publish.
 
+## Local Backend (Hackathon Minimal Express + MySQL)
+
+This repo now includes a minimal backend under `@backend`.
+
+Run backend:
+
+```sh
+cd @backend
+npm i
+npm start
+```
+
+The backend runs at `http://localhost:4000` by default. Frontend will automatically try to fetch from it when available and fall back to mock data otherwise. To override API base:
+
+```sh
+# in frontend
+echo VITE_API_BASE=http://localhost:4000 > .env.local
+```
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

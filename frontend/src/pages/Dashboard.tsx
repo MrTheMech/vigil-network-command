@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { useEffect, useState } from "react";
+import { apiGet } from "@/lib/api";
 import { 
   Users, 
   Activity, 
@@ -12,7 +14,7 @@ import {
   Zap
 } from "lucide-react";
 
-const stats = [
+const defaultStats = [
   {
     title: "Flagged Users",
     value: "2,847",
@@ -47,7 +49,7 @@ const stats = [
   }
 ];
 
-const highRiskLocations = [
+const defaultHighRiskLocations = [
   { city: "Chennai", alerts: 89, risk: "Critical" },
   { city: "Delhi", alerts: 0, risk: "High" },
   { city: "Bengaluru", alerts: 0, risk: "High" },
@@ -55,7 +57,7 @@ const highRiskLocations = [
   { city: "Mumbai", alerts: 0, risk: "Medium" }
 ];
 
-const recentAlerts = [
+const defaultRecentAlerts = [
   {
     id: 1,
     platform: "Telegram",
@@ -83,6 +85,24 @@ const recentAlerts = [
 ];
 
 export default function Dashboard() {
+  const [stats, setStats] = useState(defaultStats);
+  const [highRiskLocations, setHighRiskLocations] = useState(defaultHighRiskLocations);
+  const [recentAlerts, setRecentAlerts] = useState(defaultRecentAlerts);
+
+  useEffect(() => {
+    (async () => {
+      const data = await apiGet("/api/analytics/dashboard", {
+        stats: defaultStats,
+        high_risk_locations: defaultHighRiskLocations,
+        recent_alerts: defaultRecentAlerts,
+        system_performance: { scan_accuracy: 0, api_response: 0, data_processing: 0 },
+      });
+      if ((data as any).stats) setStats((data as any).stats);
+      if ((data as any).high_risk_locations) setHighRiskLocations((data as any).high_risk_locations);
+      if ((data as any).recent_alerts) setRecentAlerts((data as any).recent_alerts);
+    })();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}

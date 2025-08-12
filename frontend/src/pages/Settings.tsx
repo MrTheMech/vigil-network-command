@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,11 @@ export default function Settings() {
   const [realTimeAlerts, setRealTimeAlerts] = useState(true);
   const [autoEscalation, setAutoEscalation] = useState(false);
   const [blockchainSync, setBlockchainSync] = useState(true);
+  const [apiBase, setApiBase] = useState<string>(import.meta.env.VITE_API_BASE || "http://localhost:4000");
+
+  useEffect(() => {
+    // no-op: display API base; users can set .env local
+  }, []);
 
   const apiConnections = [
     { name: "Telegram Bot API", status: "connected", lastSync: "2 min ago" },
@@ -176,6 +181,13 @@ export default function Settings() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="p-3 border border-border rounded-lg text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Backend Base URL</span>
+                  <Badge variant="outline">{apiBase}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">Change by setting VITE_API_BASE in frontend .env.</p>
+              </div>
               {apiConnections.map((api) => (
                 <div key={api.name} className="flex items-center justify-between p-3 border border-border rounded-lg">
                   <div className="flex items-center gap-3">

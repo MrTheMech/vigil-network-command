@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { apiGet } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ import {
   Flag
 } from "lucide-react";
 
-const scanResults = [
+const defaultScanResults = [
   {
     id: 1,
     platform: "Telegram",
@@ -96,6 +97,14 @@ export default function ScanResults() {
   const [platformFilter, setPlatformFilter] = useState("all");
   const [confidenceFilter, setConfidenceFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
+  const [scanResults, setScanResults] = useState(defaultScanResults);
+
+  useEffect(() => {
+    (async () => {
+      const data = await apiGet("/api/scan-results", defaultScanResults);
+      setScanResults(data as any);
+    })();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {

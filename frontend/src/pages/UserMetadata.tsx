@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiGet } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import {
   AtSign
 } from "lucide-react";
 
-const userProfiles = [
+const defaultUserProfiles = [
   {
     id: 1,
     username: "@drugdealer_mh",
@@ -105,9 +106,18 @@ const connectionNetwork = {
 
 export default function UserMetadata() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUser, setSelectedUser] = useState(userProfiles[0]);
+  const [users, setUsers] = useState(defaultUserProfiles);
+  const [selectedUser, setSelectedUser] = useState(defaultUserProfiles[0]);
 
-  const filteredUsers = userProfiles.filter(user => 
+  useEffect(() => {
+    (async () => {
+      const data = await apiGet("/api/users", defaultUserProfiles);
+      setUsers(data as any);
+      if ((data as any)[0]) setSelectedUser((data as any)[0]);
+    })();
+  }, []);
+
+  const filteredUsers = users.filter(user => 
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.realName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.location.toLowerCase().includes(searchTerm.toLowerCase())
