@@ -23,7 +23,7 @@ async function initDb() {
       host: process.env.DB_HOST || 'localhost',
       port: Number(process.env.DB_PORT || 3306),
       user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASS || 'tiger',
+      password: process.env.DB_PASS || 'ANUprajwal',
       database: process.env.DB_NAME || 'vigil_network',
       connectionLimit: 5,
     });
@@ -192,19 +192,25 @@ app.get('/api/analytics/dashboard', async (req, res) => {
       LIMIT 5
     `);
 
+    const rescent_count = await queryDb(`SELECT COUNT(*) AS recent_count
+FROM messages
+WHERE timestamp >= NOW() - INTERVAL 6 HOUR;`)
+
+console.log(rescent_count)
+
     const dashboard = {
   stats: [
-        { title: 'Flagged Users', value: userCount.count.toString(), change: '+12%', icon: 'Users', trend: 'up', color: 'text-warning' },
-    { title: 'Active Scans', value: '6', change: 'Live', icon: 'Activity', trend: 'stable', color: 'text-success' },
+        { title: 'Flagged Users', value: userCount?.count?.toString() || "0", change: '+12%', icon: 'Users', trend: 'up', color: 'text-warning' },
+    { title: 'Active Scans', value: rescent_count[0].recent_count, change: 'Live', icon: 'Activity', trend: 'stable', color: 'text-success' },
         { title: 'High-Risk Alerts', value: alertCount.count.toString(), change: '+8 today', icon: 'AlertTriangle', trend: 'up', color: 'text-destructive' },
     { title: 'Threat Level', value: 'ELEVATED', change: 'Monitoring', icon: 'Shield', trend: 'stable', color: 'text-warning' }
   ],
-      high_risk_locations: highRiskLocations.map(loc => ({
+      high_risk_locations: (highRiskLocations || []).map(loc => ({
         city: loc.city,
         alerts: loc.alerts,
         risk: loc.risk
       })),
-      recent_alerts: recentAlerts.map(alert => ({
+      recent_alerts: (recentAlerts  || []).map(alert => ({
         id: alert.id,
         platform: alert.platform,
         message: alert.message,
@@ -214,6 +220,10 @@ app.get('/api/analytics/dashboard', async (req, res) => {
       })),
   system_performance: { scan_accuracy: 94.2, api_response: 98.7, data_processing: 89.3 }
 };
+
+
+
+console.log(dashboard)
 
     ok(res, dashboard);
   } catch (error) {
@@ -424,6 +434,17 @@ app.post('/api/messages/add', async (req, res) => {
       }
     }
 
+    console.log(msg.message_id?.toString() || null,
+    msg.platform || 'Telegram',
+    userId,
+    msg.content?.text || '',
+    msg.detected_terms || null,
+    msg.substance_mappings || null,
+    msg.confidence_score != null ? Number(msg.confidence_score) : null,
+    msg.risk_level || null,
+    msg.location || null,
+    new Date().toISOString().slice(0, 19).replace('T', ' '))
+
     // --- 2. Insert into messages table ---
     const insertResult = await queryDb(
       `INSERT INTO messages (
@@ -448,7 +469,7 @@ app.post('/api/messages/add', async (req, res) => {
         msg.confidence_score != null ? Number(msg.confidence_score) : null,
         msg.risk_level || null,
         msg.location || null,
-        parseDate(msg.metadata?.date)
+        new Date().toISOString().slice(0, 19).replace('T', ' ')
       ]
     );
 
