@@ -20,11 +20,11 @@ let pool;
 async function initDb() {
   try {
     pool = await mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      port: Number(process.env.DB_PORT || 3306),
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASS || 'ANUprajwal',
-      database: process.env.DB_NAME || 'vigil_network',
+      host: '3.108.233.123',
+      port:  3306,
+      user:  'prajwal',
+      password:  'prajwal',
+      database: 'vigil_network',
       connectionLimit: 5,
     });
 
